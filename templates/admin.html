@@ -3,71 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo</title>
+    <meta http-equiv="refresh" content="120">
+    <title>Painel HelpDesk</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <style>
+        /* --- Estilos de Status (Override Bootstrap) --- */
+        .status-Pendente, .status-Pendente > td { 
+            background-color: #ffffff !important; 
+            --bs-table-bg: #ffffff !important;
+        }
+        .status-EmAndamento, .status-EmAndamento > td { 
+            background-color: #fff3cd !important; 
+            --bs-table-bg: #fff3cd !important;
+        }
+        .status-Concluído, .status-Concluído > td { 
+            background-color: #d1e7dd !important; 
+            --bs-table-bg: #d1e7dd !important;
+            color: #0f5132; 
+        }
+        
+        /* UX da Tabela */
+        .table-hover tbody tr:hover > td { filter: brightness(0.95); }
+        .col-desc { width: 40%; font-size: 0.95rem; }
+        .col-anexo { width: 100px; min-width: 100px; text-align: center; }
+        .col-acao { text-align: center; }
+
+        /* Componentes */
+        .anexo-container { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; }
+        .btn-anexo { font-size: 0.8rem; padding: 2px 6px; }
+    </style>
 </head>
-<body>
-    <nav class="navbar navbar-dark bg-dark">
-        <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">Admin - SlowDown Tracker</span>
-            <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">Sair</a>
+<body class="bg-light">
+    
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow">
+        <div class="container-fluid px-4">
+            <span class="navbar-brand"><i class="bi bi-headset"></i> Central de Chamados TI</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-box-arrow-right"></i> Sair
+            </a>
         </div>
     </nav>
 
-    <div class="container mt-4">
-        <h2 class="mb-4">Relatórios de Lentidão</h2>
-        
-        <div class="table-responsive">
+    <div class="container-fluid px-4 pb-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">Gerenciamento de Chamados</h5>
+            </div>
+            
             <div class="table-responsive">
-                <table class="table table-striped table-hover border align-middle">
-                    <thead class="table-dark">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark text-nowrap">
                         <tr>
                             <th>ID</th>
-                            <th>Data/Hora</th>
-                            <th>Nome</th>
-                            <th>Setor</th>
-                            <th>Módulo</th>
-                            <th>Afetados</th>
-                            <th>Vídeo</th>
-                            <th>Ações</th> </tr>
+                            <th>Status / Ações</th>
+                            <th>Prioridade</th>
+                            <th>Solicitante</th>
+                            <th class="col-desc">Descrição</th>
+                            <th class="col-anexo">Anexos</th>
+                            <th class="col-acao">Excluir</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        {% for report in reports %}
-                        <tr>
-                            <td>{{ report['id'] }}</td>
-                            <td>{{ report['data_hora'] }}</td>
-                            <td><strong>{{ report['nome'] }}</strong></td>
-                            <td>{{ report['setor'] }}</td>
-                            <td>{{ report['modulo'] }}</td>
+                        {% for item in chamados %}
+                        <tr class="status-{{ item['status'] | replace(' ', '') }}">
+                            <td class="fw-bold">#{{ item['id'] }}</td>
+                            
+                            <!-- Coluna de Ações -->
                             <td>
-                                {% if report['outros_afetados'] == 'Sim' %}
-                                    <span class="badge bg-danger">Sim</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">Não</span>
+                                <span class="badge bg-secondary mb-2">{{ item['status'] }}</span><br>
+                                <div class="btn-group btn-group-sm shadow-sm">
+                                    {% if item['status'] == 'Pendente' %}
+                                        <a href="{{ url_for('mudar_status', id=item['id'], novo_status='Em Andamento') }}" class="btn btn-light border" title="Iniciar">▶️ Iniciar</a>
+                                    {% elif item['status'] == 'Em Andamento' %}
+                                        <button class="btn btn-info text-white" disabled style="opacity:1;">⏳ Em andamento</button>
+                                    {% endif %}
+
+                                    {% if item['status'] != 'Concluído' %}
+                                        <a href="{{ url_for('mudar_status', id=item['id'], novo_status='Concluído') }}" class="btn btn-success text-white" title="Concluir">✅ Concluir</a>
+                                    {% endif %}
+                                </div>
+                            </td>
+
+                            <!-- Prioridade -->
+                            <td>
+                                {% if item['prioridade'] == 'Alta' %} <span class="badge bg-danger p-2">ALTA</span>
+                                {% elif item['prioridade'] == 'Média' %} <span class="badge bg-warning text-dark p-2">Média</span>
+                                {% else %} <span class="badge bg-info text-dark p-2">Baixa</span>
                                 {% endif %}
                             </td>
+
+                            <!-- Solicitante -->
                             <td>
-                                {% if report['video_filename'] %}
-                                    <a href="{{ url_for('uploaded_file', filename=report['video_filename']) }}" 
-                                    class="btn btn-sm btn-primary" target="_blank">
-                                    Ver Vídeo
-                                    </a>
-                                {% else %}
-                                    <span class="text-muted small">-</span>
-                                {% endif %}
+                                <div class="fw-bold">{{ item['nome'] }}</div>
+                                <div class="text-muted small"><i class="bi bi-clock"></i> {{ item['data_hora'] }}</div>
                             </td>
-                            <td>
-                                <form action="{{ url_for('delete_report', id=report['id']) }}" method="post" 
-                                    onsubmit="return confirm('Tem certeza que deseja excluir este reporte?');">
-                                    <button type="submit" class="btn btn-sm btn-danger">
-                                        Excluir
-                                    </button>
+
+                            <!-- Descrição -->
+                            <td class="col-desc text-break">{{ item['descricao'] }}</td>
+                            
+                            <!-- Anexos -->
+                            <td class="col-anexo">
+                                <div class="anexo-container">
+                                    {% if item['imagem_filename'] %}
+                                        {% for img in item['imagem_filename'].split(separator) %}
+                                            <a href="{{ url_for('uploaded_file', filename=img) }}" target="_blank" class="btn btn-info text-white btn-sm btn-anexo">📷</a>
+                                        {% endfor %}
+                                    {% endif %}
+                                    
+                                    {% if item['video_filename'] %}
+                                        {% for vid in item['video_filename'].split(separator) %}
+                                            <a href="{{ url_for('uploaded_file', filename=vid) }}" target="_blank" class="btn btn-primary btn-sm btn-anexo">🎥</a>
+                                        {% endfor %}
+                                    {% endif %}
+
+                                    {% if not item['imagem_filename'] and not item['video_filename'] %}
+                                        <span class="text-muted small">-</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+
+                            <!-- Excluir -->
+                            <td class="col-acao">
+                                <form action="{{ url_for('delete_chamado', id=item['id']) }}" method="post" onsubmit="return confirm('Excluir permanentemente?');">
+                                    <button class="btn btn-outline-danger btn-sm border-0"><i class="bi bi-trash-fill"></i></button>
                                 </form>
                             </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="8" class="text-center p-4">Nenhum reporte encontrado.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
