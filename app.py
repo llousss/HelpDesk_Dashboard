@@ -195,12 +195,6 @@ Equipe de TI
 
 # --- ROTAS PÚBLICAS ---
 
-@app.route('/favicon.ico')
-def favicon():
-    """Rota para servir o ícone do site e evitar erro 404 no console."""
-    return send_from_directory(os.path.join(app.root_path, 'static'),
-                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
-
 @app.route('/')
 def index():
     """Página inicial (Menu)."""
