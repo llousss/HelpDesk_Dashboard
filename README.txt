@@ -5,6 +5,11 @@ Abra o terminal (CMD ou PowerShell) na pasta do projeto.
 
 Instale o Flask (o framework web):"pip install flask"
 
+Crie um arquivo .env na raiz do projeto seguindo o modelo:
+
+SECRET_KEY=sua_chave_secreta_aqui
+EMAIL_SENHA=senha_de_app_do_google
+
 Rode o aplicativo:"python app.py"
 
 Acesse no seu navegador: http://localhost:5000 (ou http://SEU_IP:5000 para que outros computadores da rede possam acessar).
