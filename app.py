@@ -1,7 +1,7 @@
 import os
 import sqlite3
 import smtplib
-import math  # [NOVO] Importação para cálculos matemáticos (arredondar páginas)
+import math  # Importação para cálculos matemáticos (arredondar páginas)
 from email.message import EmailMessage
 from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory
 from datetime import datetime
