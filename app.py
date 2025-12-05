@@ -46,7 +46,7 @@ ADMIN_PASS = 'your_password'
 
 def get_db_connection():
     """Cria conexão com o arquivo do banco de dados."""
-    conn = sqlite3.connect('helpdesk_v3.db') 
+    conn = sqlite3.connect('helpdesk.db') 
     # Row Factory permite acessar colunas pelo nome (ex: item['email'])
     conn.row_factory = sqlite3.Row
     return conn
