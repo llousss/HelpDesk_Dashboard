@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="120">
-    <title>Painel HelpDesk</title>
+    <meta http-equiv="refresh" content="120"> <!-- Refresh da página a cada 2 minutos -->
+    
+    <!-- LÓGICA DO TÍTULO ESTILO GMAIL -->
+    <title>Painel HelpDesk {% if pendentes > 0 %}({{ pendentes }}) {% endif %}</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     
     <style>
-        /* --- Estilos de Status (Override Bootstrap) --- */
+        /* --- Estilos de Status --- */
         .status-Pendente, .status-Pendente > td { 
             background-color: #ffffff !important; 
             --bs-table-bg: #ffffff !important;
@@ -37,7 +39,10 @@
     
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow">
         <div class="container-fluid px-4">
-            <span class="navbar-brand"><i class="bi bi-headset"></i> Central de Chamados TI</span>
+            <span class="navbar-brand d-flex align-items-center">
+                <img src="{{ url_for('static', filename='logo-valni.webp') }}" alt="Logo" height="30" class="d-inline-block align-text-top me-2 bg-white rounded p-1">
+                Central de Chamados TI
+            </span>
             <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">
                 <i class="bi bi-box-arrow-right"></i> Sair
             </a>
@@ -48,7 +53,6 @@
         <div class="card shadow-sm">
             
             <div class="card-header bg-white py-3">
-                <!-- Linha Superior: Título e Contadores -->
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="mb-0 fw-bold">Gerenciamento de Chamados</h5>
                     
@@ -65,13 +69,11 @@
                     </div>
                 </div>
 
-                <!-- BARRA DE PESQUISA -->
                 <form action="{{ url_for('admin') }}" method="get">
                     <div class="input-group">
                         <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
                         <input type="text" name="q" class="form-control" placeholder="Pesquisar por nome, email, descrição ou ID..." value="{{ request.args.get('q', '') }}">
                         <button class="btn btn-primary" type="submit">Buscar</button>
-                        
                         {% if request.args.get('q') %}
                             <a href="{{ url_for('admin') }}" class="btn btn-outline-secondary" title="Limpar Filtro">Limpar</a>
                         {% endif %}
@@ -127,6 +129,14 @@
                             
                             <td class="col-anexo">
                                 <div class="anexo-container">
+                                    
+                                    <!-- Botão de Baixar Tudo (ZIP) -->
+                                    {% if item['imagem_filename'] or item['video_filename'] %}
+                                        <a href="{{ url_for('download_zip', id=item['id']) }}" class="btn btn-dark btn-sm w-100 mb-1" title="Baixar todos como ZIP" style="font-size: 0.75rem;">
+                                            <i class="bi bi-file-earmark-zip"></i> Baixar ZIP
+                                        </a>
+                                    {% endif %}
+
                                     {% if item['imagem_filename'] %}
                                         {% for img in item['imagem_filename'].split(separator) %}
                                             <a href="{{ url_for('uploaded_file', filename=img) }}" target="_blank" class="btn btn-info text-white btn-sm btn-anexo">📷</a>
@@ -163,36 +173,23 @@
                 </table>
             </div>
 
-            <!-- RODAPÉ COM PAGINAÇÃO -->
-            <!-- Só aparece se houver mais de 1 página -->
             {% if total_pages > 1 %}
             <div class="card-footer bg-white py-3 border-top">
                 <nav aria-label="Navegação">
                     <ul class="pagination justify-content-center mb-0">
-                        
-                        <!-- Botão Anterior: Desativa se estiver na página 1 -->
                         <li class="page-item {% if page == 1 %}disabled{% endif %}">
-                            <!-- Mantém a busca (&q=...) ao trocar de página -->
                             <a class="page-link" href="{{ url_for('admin', page=page-1, q=busca) }}" tabindex="-1">Anterior</a>
                         </li>
-                        
-                        <!-- Indicador de Página (Ex: Página 1 de 5) -->
                         <li class="page-item disabled">
-                            <span class="page-link text-muted bg-light border-0">
-                                Página <strong>{{ page }}</strong> de <strong>{{ total_pages }}</strong>
-                            </span>
+                            <span class="page-link text-muted bg-light border-0">Página <strong>{{ page }}</strong> de <strong>{{ total_pages }}</strong></span>
                         </li>
-                        
-                        <!-- Botão Próximo: Desativa se estiver na última página -->
                         <li class="page-item {% if page == total_pages %}disabled{% endif %}">
                             <a class="page-link" href="{{ url_for('admin', page=page+1, q=busca) }}">Próximo</a>
                         </li>
-
                     </ul>
                 </nav>
             </div>
             {% endif %}
-
         </div>
     </div>
 </body>
