@@ -12,17 +12,17 @@ EMAIL_SENHA=senha_de_app_do_google
 
 Rode o aplicativo:"python app.py"
 
-Acesse no seu navegador: http://localhost:5000 (ou http://SEU_IP:5000 para que outros computadores da rede possam acessar).
+Acesse no seu navegador: http://localhost (ou http://SEU_IP para que outros computadores da rede possam acessar).
 
-Acesso na Rede: Para que outros funcionários acessem, você deve passar o IP da sua máquina. Exemplo: http://192.168.1.50:5000. O código já está configurado (host='0.0.0.0') para permitir isso.
+Acesso na Rede: Para que outros funcionários acessem, você deve passar o IP da sua máquina. Exemplo: http://192.168.1.50. O código já está configurado (host='0.0.0.0') para permitir isso.
 
 Banco de Dados: O arquivo helpdesk_v3.db será criado automaticamente na primeira execução e guardará todos os votos.
 
 Vídeos: Os vídeos pesados podem encher o disco rápido. Monitore a pasta uploads.
 
 
-Acesse http://localhost:5000/admin (ou clique no link se criar um botão na home).
+Acesse http://localhost/admin (ou clique no link se criar um botão na home).
 
-Usuário: admin
+Usuário: your_user
 
-Senha: 123456
+Senha: your_password
