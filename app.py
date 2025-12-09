@@ -34,6 +34,9 @@ EMAIL_PORT = 587                   # Porta padrão para TLS
 EMAIL_USER = 'YOUR_EMAIL_USER' 
 EMAIL_PASS = os.getenv('EMAIL_SENHA') # Senha de aplicativo (App Password)
 
+# E-mail que receberá os alertas de novos chamados
+EMAIL_ADMIN = 'YOUR_EMAIL_USER'
+
 # Aplica configurações no app Flask e cria a pasta de uploads se não existir
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -100,11 +103,42 @@ def processar_uploads(lista_arquivos, extensoes_permitidas, prefixo):
 
 # --- FUNÇÕES DE DISPARO DE E-MAIL (ASSÍNCRONAS) ---
 
+# Função para avisar Admin
+def notificar_admin_novo_chamado(nome_usuario, email_usuario, id_chamado, descricao_texto):
+    try:
+        msg = EmailMessage()
+        msg.set_content(f'''
+NOVO CHAMADO ABERTO! 🔔
+
+ID: #{id_chamado}
+Solicitante: {nome_usuario} ({email_usuario})
+Horário: {datetime.now().strftime('%d/%m/%Y %H:%M')}
+
+Descrição do Problema:
+"{descricao_texto}"
+
+Acesse o painel para responder:
+http://suporte.com/admin
+        ''')
+        
+        msg['Subject'] = f'🔔 Novo Chamado #{id_chamado} - {nome_usuario}'
+        msg['From'] = email_usuario
+        msg['To'] = EMAIL_ADMIN # Envia para o email admin definido no topo
+
+        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
+            server.starttls()
+            server.login(EMAIL_USER, EMAIL_PASS)
+            server.send_message(msg)
+        print(f"Notificação enviada para ADMIN: {EMAIL_ADMIN}")
+        
+    except Exception as e:
+        print(f"ERRO EMAIL ADMIN: {e}")
+
 def enviar_email_confirmacao(destinatario, nome_usuario, id_chamado, descricao_texto):
     """Envia e-mail de confirmação de abertura."""
     try:
         msg = EmailMessage()
-        msg.set_content(f"""
+        msg.set_content(f'''
 Olá, {nome_usuario}!
 
 Recebemos seu chamado de suporte (ID: #{id_chamado}).
@@ -115,12 +149,13 @@ Descrição do problema reportado:
 
 Atenciosamente,
 Equipe de TI
-        """)
+        ''')
 
         msg['Subject'] = f'Confirmacao de Chamado #{id_chamado}'
         msg['From'] = EMAIL_USER
         msg['To'] = destinatario
 
+        # Conecta ao Gmail, criptografa e envia
         with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
             server.starttls()
             server.login(EMAIL_USER, EMAIL_PASS)
@@ -134,7 +169,7 @@ def enviar_email_em_analise(destinatario, nome_usuario, id_chamado, descricao_te
     """Notifica que o chamado está 'Em Andamento'."""
     try:
         msg = EmailMessage()
-        msg.set_content(f"""
+        msg.set_content(f'''
 Olá, {nome_usuario}!
 
 Seu chamado de suporte (ID: #{id_chamado}) entrou em análise.
@@ -147,7 +182,7 @@ Descrição do problema reportado:
 
 Atenciosamente,
 Equipe de TI
-        """)
+        ''')
 
         msg['Subject'] = f'Chamado #{id_chamado} em Analise'
         msg['From'] = EMAIL_USER
@@ -166,7 +201,7 @@ def enviar_email_conclusao(destinatario, nome_usuario, id_chamado, descricao_tex
     """Notifica que o chamado foi 'Concluído'."""
     try:
         msg = EmailMessage()
-        msg.set_content(f"""
+        msg.set_content(f'''
 Olá, {nome_usuario}!
 
 Seu chamado de suporte (ID: #{id_chamado}) foi concluído pela nossa equipe de TI.
@@ -178,7 +213,7 @@ Descrição do problema reportado:
 
 Atenciosamente,
 Equipe de TI
-        """)
+        ''')
 
         msg['Subject'] = f'Chamado #{id_chamado} Concluído'
         msg['From'] = EMAIL_USER
