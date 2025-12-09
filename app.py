@@ -122,7 +122,7 @@ http://suporte.com/admin
         ''')
         
         msg['Subject'] = f'🔔 Novo Chamado #{id_chamado} - {nome_usuario}'
-        msg['From'] = email_usuario
+        msg['From'] = EMAIL_USER
         msg['To'] = EMAIL_ADMIN # Envia para o email admin definido no topo
 
         with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
